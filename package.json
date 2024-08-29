@@ -1,0 +1,38 @@
+{
+    "name": "newman-reporter-junitxray-byfolder",
+    "version": "1.0.",
+    "description": "Customized Newman JUnit report to industrialize the reporting of E2E test results organized by folders composed of multiple requests.",
+    "main": "index.js",
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:ismailktami/newman-reporter-junitxray-byfolder.git"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "newman": "^5.2.2",
+        "xmlbuilder": "^15.1.1"
+    },
+    "newman-reporter": {
+        "junitxray-byfolder": "index.js"
+    },
+    "keywords": [
+        "newman",
+        "reporter",
+        "junit",
+        "xray",
+        "junitxray",
+        "folder",
+        "tags",
+        "e2e"
+    ],
+    "engines": {
+        "node": ">=6"
+    },
+    "peerDependencies": {
+        "newman": ">=4"
+    }
+}

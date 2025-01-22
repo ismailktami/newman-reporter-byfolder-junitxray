@@ -1,6 +1,6 @@
 {
     "name": "newman-reporter-junitxray-byfolder",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "Customized Newman JUnit report to industrialize the reporting of E2E test results organized by folders composed of multiple requests.",
     "main": "index.js",
     "repository": {
@@ -13,7 +13,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "newman": "^5.2.2",
+        "newman": "^6.2.1",
         "xmlbuilder": "^15.1.1"
     },
     "newman-reporter": {
@@ -31,8 +31,5 @@
     ],
     "engines": {
         "node": ">=6"
-    },
-    "peerDependencies": {
-        "newman": ">=4"
     }
 }

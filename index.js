@@ -2,6 +2,17 @@ const fs = require("fs");
 const xmlbuilder = require("xmlbuilder");
 const prefixTestPattern = /^[A-Za-z]+-\d+/;
 
+class Folder {
+  constructor(name) {
+    this.name = name;
+    this.tests = 0;
+    this.failures = 0;
+    this.errors = 0;
+    this.skipped = 0;
+    this.requests = [];
+  }
+}
+
 // Function to check if a request already exists in the array to avoid duplicates
 function requestExists(requests, requestName) {
   return requests.some((request) => request.name === requestName);
@@ -19,24 +30,38 @@ class JUnitReporterByFolder {
       // Create the root XML element
       const report = xmlbuilder.create("testsuites");
       const folders = {};
-
+      const skippedExecutions=[];
       // Process each execution in the run
       summary.run.executions.forEach((execution) => {
-        const folderName = execution.item.parent().name;
-        const match = folderName.match(prefixTestPattern);
-        console.log(match)
-        if (!match & (folderName !== summary.collection.name)) return;
 
-        // Initialize folder details if not already present
-        if (!folders[folderName]) {
-          folders[folderName] = {
-            name: folderName,
-            tests: 0,
-            failures: 0,
-            errors: 0,
-            skipped: 0,
-            requests: [],
-          };
+        // Determine if this is a valid folder or request to include in the report
+        let folderName = execution.item.parent().name;
+        const matchFolderName = folderName.match(prefixTestPattern);
+        const matchRequestName = execution.item.name.match(prefixTestPattern);
+        if (matchFolderName) {
+          if (!folders[execution.item.parent().name]) {
+            folders[execution.item.parent().name] = new Folder(
+              execution.item.parent().name
+            );
+          }
+        } 
+        else if (
+          matchRequestName &&
+          execution.item.parent().name == summary.collection.name
+        ) {
+          folderName = execution.item.name;
+          folders[execution.item.name] = new Folder(execution.item.name);
+        } 
+        else if (
+          matchRequestName &&
+          execution.item.parent().name != summary.collection.name
+        ) {
+          folderName = execution.item.name;
+          folders[execution.item.name] = new Folder(execution.item.name);
+        } 
+        else {
+          skippedExecutions.push(folderName +"/"+execution.item.name)
+          return;// Skip if the folder or request name doesn't have the prefix key project
         }
 
         // Create request details
@@ -53,7 +78,11 @@ class JUnitReporterByFolder {
 
       // Generate the XML string and save the JUnit XML report
       const xmlString = report.end({ pretty: true });
-      this.saveXML(reporterOptions.junitxrayByfolderExport || "junitxray-byfolder.xml", xmlString);
+      this.saveXML(
+        reporterOptions.junitxrayByfolderExport || "junitxray-byfolder.xml",
+        xmlString
+      );
+      console.warn("[junitxray-byfolder] Skipped executions for the report:\n" + skippedExecutions.join("\n"));
     });
   }
 
@@ -83,13 +112,8 @@ class JUnitReporterByFolder {
   processFolders(summary, folders, report) {
     Object.keys(folders).forEach((folderName) => {
       const folder = folders[folderName];
-      folder.name =
-        folderName === summary.collection.name
-          ? folder.requests[0].name
-          : folder.name;
-      console.log(folder.name);
-
       const match = folder.name.match(prefixTestPattern);
+      // Skip folders without matching pattern
       if (!match & (folder.name !== summary.collection.name)) return;
 
       // Create a testsuite element
@@ -139,13 +163,13 @@ class JUnitReporterByFolder {
       // Add properties to the testcase
       const properties = testcase.ele("properties");
       properties.ele("property", {
-        name: "test_key",
+        name: "test_key", // add test_key prefix to report
         value: match ? match[0] : folderName,
       });
       properties.ele("property", { name: "testrun_comment" }).dat(details);
 
-      testcase.att("failures", totalFailures);
-      testsuite.att("failures", totalFailures);
+      testcase.att("failures", totalFailures); // Add total failures to the testcase
+      testsuite.att("failures", totalFailures); // Add total failures to the testsuite
     });
   }
 

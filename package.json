@@ -1,6 +1,6 @@
 {
     "name": "newman-reporter-junitxray-byfolder",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Customized Newman JUnit report to industrialize the reporting of E2E test results organized by folders composed of multiple requests.",
     "main": "index.js",
     "repository": {
